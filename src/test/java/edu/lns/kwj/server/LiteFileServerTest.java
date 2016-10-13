@@ -136,7 +136,7 @@ public class LiteFileServerTest {
                 client.connect("localhost", port);
                 List<String> fileList = client.getFileList();
                 if (fileList.size() > 0) {
-                    client.requestFile(fileList.get(2), "./download/test.txt");
+                    client.requestFile(fileList.get(0), "./download/" + fileList.get(0).split(":")[1]);
                     print("done");
                 } else {
 

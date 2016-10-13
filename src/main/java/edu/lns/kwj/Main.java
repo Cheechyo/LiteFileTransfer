@@ -32,9 +32,9 @@ public class Main {
                     for (String s: fileList) {
                         println(s);
                     }
-                    println("-----리스트 첫번째 파일을 ./download/test.txt에 만들어 붙여넣습니다. ----");
+                    println("-----서버의 파일 리스트 첫번째 파일을 ./download/test.txt에 만들어 붙여넣습니다. ----");
                     if (fileList.size() > 0) {
-                        client.requestFile(fileList.get(2), "./download/test.txt");
+                        client.requestFile(fileList.get(0), "./download/test.txt");
                         println("done");
                     } else {
 

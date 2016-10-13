@@ -1,9 +1,12 @@
 package edu.lns.kwj.client;
 
+import edu.lns.kwj.server.LiteFileServer;
+
 import java.io.*;
 import java.net.Socket;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.SynchronousQueue;
 
 /**
  * Created by Cheechyo on 2016. 10. 13..
@@ -39,12 +42,12 @@ public class LiteFileClient {
     }
 
     public List<String> getFileList() throws IOException {
-        writeMsg("fileList");
+        writeMsg(LiteFileServer.REQ_FILE_LIST);
         LinkedList<String> fileList = new LinkedList<String>();
         while(true){
             String line = readLine();
-            if (line.split(":")[0].equals("File")){
-                fileList.add(line.split(":")[1]);
+            if (line.split(LiteFileServer.LIST_DELIMITER)[0].equals("File")){
+                fileList.add(line.split(LiteFileServer.LIST_DELIMITER)[1]);
             } else if (line.equals("ENDOFLIST")){
                 break;
             }
@@ -53,15 +56,37 @@ public class LiteFileClient {
     }
 
     public void requestFile(String fileName, String outPath) throws IOException {
-        writeMsg("File:" + fileName);
+        writeMsg("File" + LiteFileServer.LIST_DELIMITER + fileName);
+        File file = new File(outPath);
+        File parent = new File(file.getParent());
+        // if the directory does not exist, create it
+        if (!parent.exists()) {
+            println("creating directory: " + fileName);
+            boolean result = false;
+
+            try{
+                parent.mkdir();
+                result = true;
+            }
+            catch(SecurityException se){
+                //handle it
+            }
+            if(result) {
+                println("DIR created : " + parent.getPath());
+            }
+        }
         byte[] buf = new byte[16*1024];
         InputStream inputStream = socket.getInputStream();
-        FileOutputStream fileOutputStream = new FileOutputStream(new File(outPath));
+        FileOutputStream fileOutputStream = new FileOutputStream(file);
         int count = inputStream.read(buf);
         do {
             fileOutputStream.write(buf, 0, count);
             count = inputStream.read(buf);
         } while (count > 0);
         fileOutputStream.close();
+    }
+
+    private void println(String s) {
+        System.out.println(s);
     }
 }

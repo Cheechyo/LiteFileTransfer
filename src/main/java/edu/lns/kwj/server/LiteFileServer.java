@@ -15,15 +15,47 @@ public class LiteFileServer {
     private BufferedReader in;
     private final ServerSocket server;
     private Socket socket;
+    public static String REQ_FILE_LIST = "fileList";
+    public static String TAG_FILE = "File";
+    public static String LIST_DELIMITER = ":";
+    private Thread serverThread;
+    private boolean printLog = false;
 
-    public LiteFileServer(int port) throws IOException {
+    public LiteFileServer(int port, boolean printLog) throws IOException {
+        this.printLog = printLog;
         this.port = port;
         server = new ServerSocket(port);
     }
 
     public void open() throws IOException {
+        serverThread = new Thread(new Runnable() {
+            public void run() {
+                while (true) {
+                    String msg = null;
+                    try {
+                        msg =LiteFileServer.this.readLine();
+                        print("server received : " + msg);
+                        if (msg.equals(REQ_FILE_LIST)) {
+                            LiteFileServer.this.writeFileList();
+                        } else {
+                            if (msg.split(LIST_DELIMITER)[0].equals(TAG_FILE)){
+                                LiteFileServer.this.writeFile(msg.split(":")[1]);
+                            }
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
         socket = server.accept();
         in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        serverThread.start();
+    }
+
+    private void print(String s) {
+        if (printLog)
+            System.out.println(s);
     }
 
     public String readLine() throws IOException {

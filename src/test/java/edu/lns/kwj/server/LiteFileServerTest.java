@@ -22,7 +22,7 @@ public class LiteFileServerTest {
         (new Thread(new Runnable() {
             public void run() {
                 try {
-                    LiteFileServer server = new LiteFileServer(port);
+                    LiteFileServer server = new LiteFileServer(port, false);
                     server.open();
                     print(server.readLine());
                     print("server end");
@@ -53,7 +53,7 @@ public class LiteFileServerTest {
     public void messageSync(){
         csTest(new EventTestInterface(){
             public void serverRun() throws IOException {
-                LiteFileServer server = new LiteFileServer(port);
+                LiteFileServer server = new LiteFileServer(port, false);
                 server.open();
                 print(server.readLine());
             }
@@ -70,7 +70,7 @@ public class LiteFileServerTest {
     public void listSync(){
         csTest(new EventTestInterface(){
             public void serverRun() throws IOException {
-                LiteFileServer server = new LiteFileServer(port);
+                LiteFileServer server = new LiteFileServer(port, false);
                 server.open();
                 String msg = server.readLine();
                 print("server received : " + msg);
@@ -95,7 +95,7 @@ public class LiteFileServerTest {
     public void fileGet(){
         csTest(new EventTestInterface(){
             public void serverRun() throws IOException {
-                LiteFileServer server = new LiteFileServer(port);
+                LiteFileServer server = new LiteFileServer(port, false);
                 server.open();
                 while (true) {
                     String msg = server.readLine();
@@ -120,6 +120,28 @@ public class LiteFileServerTest {
                 while(true){
                 }
                 //client.close();
+            }
+        });
+    }
+
+    @Test
+    public void senario(){
+        csTest(new EventTestInterface(){
+            public void serverRun() throws IOException {
+                LiteFileServer server = new LiteFileServer(port, false);
+                server.open();
+            }
+            public void clientRun() throws IOException {
+                LiteFileClient client = new LiteFileClient();
+                client.connect("localhost", port);
+                List<String> fileList = client.getFileList();
+                if (fileList.size() > 0) {
+                    client.requestFile(fileList.get(2), "./download/test.txt");
+                    print("done");
+                } else {
+
+                }
+                client.close();
             }
         });
     }
@@ -157,7 +179,7 @@ public class LiteFileServerTest {
 
     //@Test
     public void server_client_nosync() throws IOException {
-        LiteFileServer server = new LiteFileServer(port);
+        LiteFileServer server = new LiteFileServer(port, false);
         server.open();
         LiteFileClient client = new LiteFileClient();
         client.connect("localhost", port);

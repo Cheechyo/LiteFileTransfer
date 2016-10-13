@@ -4,9 +4,7 @@ import edu.lns.kwj.client.LiteFileClient;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.net.Socket;
-
-import static org.junit.Assert.*;
+import java.util.List;
 
 /**
  * Created by Cheechyo on 2016. 10. 13..
@@ -14,7 +12,10 @@ import static org.junit.Assert.*;
 public class LiteFileServerTest {
 
     private int port = 8889;
-
+    interface EventTestInterface{
+        public void serverRun() throws IOException;
+        public void clientRun() throws IOException;
+    }
     @Test
     public void sync(){
         print("haha");
@@ -35,7 +36,7 @@ public class LiteFileServerTest {
                 LiteFileClient client = new LiteFileClient();
                 try {
                     client.connect("localhost", port);
-                    client.writeMsg("hello");
+                    client.writeMsg("handshake");
                     client.close();
                     print("client end");
                 } catch (IOException e) {
@@ -48,11 +49,113 @@ public class LiteFileServerTest {
             ;
     }
 
+    @Test
+    public void messageSync(){
+        csTest(new EventTestInterface(){
+            public void serverRun() throws IOException {
+                LiteFileServer server = new LiteFileServer(port);
+                server.open();
+                print(server.readLine());
+            }
+            public void clientRun() throws IOException {
+                LiteFileClient client = new LiteFileClient();
+                client.connect("localhost", port);
+                client.writeMsg("handshake");
+                client.close();
+            }
+        });
+    }
+
+    @Test
+    public void listSync(){
+        csTest(new EventTestInterface(){
+            public void serverRun() throws IOException {
+                LiteFileServer server = new LiteFileServer(port);
+                server.open();
+                String msg = server.readLine();
+                print("server received : " + msg);
+                if (msg.equals("fileList")){
+                    server.writeFileList();
+                }
+            }
+            public void clientRun() throws IOException {
+                LiteFileClient client = new LiteFileClient();
+                client.connect("localhost", port);
+                client.writeMsg("fileList");
+                while(true){
+                    String buf = client.readLine();
+                    print(buf);
+                }
+                //client.close();
+            }
+        });
+    }
+
+    @Test
+    public void fileGet(){
+        csTest(new EventTestInterface(){
+            public void serverRun() throws IOException {
+                LiteFileServer server = new LiteFileServer(port);
+                server.open();
+                while (true) {
+                    String msg = server.readLine();
+                    print("server received : " + msg);
+                    if (msg.equals("fileList")) {
+                        server.writeFileList();
+                    } else if (msg.split(":")[0].equals("File")){
+                        server.writeFile(msg.split(":")[1]);
+                    }
+                }
+            }
+            public void clientRun() throws IOException {
+                LiteFileClient client = new LiteFileClient();
+                client.connect("localhost", port);
+                List<String> fileList = client.getFileList();
+                if (fileList.size() > 0) {
+                    client.requestFile(fileList.get(2), "test.txt");
+                    print("done");
+                } else {
+
+                }
+                while(true){
+                }
+                //client.close();
+            }
+        });
+    }
+
+    private void csTest(final EventTestInterface eventTestInterface) {
+        (new Thread(new Runnable() {
+            public void run() {
+                try {
+                    eventTestInterface.serverRun();
+                } catch (IOException e) {
+                    print("server error");
+                    e.printStackTrace();
+                }
+                print("server end");
+            }
+        })).start();
+        (new Thread(new Runnable() {
+            public void run() {
+                try {
+                    eventTestInterface.clientRun();
+                } catch (IOException e) {
+                    print("client error");
+                    e.printStackTrace();
+                }
+                print("client end");
+            }
+        })).start();
+        while (true)
+            ;
+    }
+
     private void print(String str) {
         System.out.println(str);
     }
 
-    @Test
+    //@Test
     public void server_client_nosync() throws IOException {
         LiteFileServer server = new LiteFileServer(port);
         server.open();

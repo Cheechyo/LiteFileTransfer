@@ -5,5 +5,5 @@ package edu.lns.kwj;
  */
 public class E {
 
-    static final int port = 8889; // 서버에서 사용하는 포트번호
+    static final int port = 25111; // 서버에서 사용하는 포트번호
 }

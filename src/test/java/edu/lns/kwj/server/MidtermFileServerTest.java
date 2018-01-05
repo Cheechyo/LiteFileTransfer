@@ -1,6 +1,6 @@
 package edu.lns.kwj.server;
 
-import edu.lns.kwj.client.LiteFileClient;
+import edu.lns.kwj.client.MidtermFileClient;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * Created by Cheechyo on 2016. 10. 13..
  */
-public class LiteFileServerTest {
+public class MidtermFileServerTest {
 
     private int port = 8889;
     interface EventTestInterface{
@@ -22,7 +22,7 @@ public class LiteFileServerTest {
         (new Thread(new Runnable() {
             public void run() {
                 try {
-                    LiteFileServer server = new LiteFileServer(port, false);
+                    MidtermFileServer server = new MidtermFileServer(port, false);
                     server.open();
                     print(server.readLine());
                     print("server end");
@@ -33,7 +33,7 @@ public class LiteFileServerTest {
         })).start();
         (new Thread(new Runnable() {
             public void run() {
-                LiteFileClient client = new LiteFileClient();
+                MidtermFileClient client = new MidtermFileClient();
                 try {
                     client.connect("localhost", port);
                     client.writeMsg("handshake");
@@ -53,12 +53,12 @@ public class LiteFileServerTest {
     public void messageSync(){
         csTest(new EventTestInterface(){
             public void serverRun() throws IOException {
-                LiteFileServer server = new LiteFileServer(port, false);
+                MidtermFileServer server = new MidtermFileServer(port, false);
                 server.open();
                 print(server.readLine());
             }
             public void clientRun() throws IOException {
-                LiteFileClient client = new LiteFileClient();
+                MidtermFileClient client = new MidtermFileClient();
                 client.connect("localhost", port);
                 client.writeMsg("handshake");
                 client.close();
@@ -70,7 +70,7 @@ public class LiteFileServerTest {
     public void listSync(){
         csTest(new EventTestInterface(){
             public void serverRun() throws IOException {
-                LiteFileServer server = new LiteFileServer(port, false);
+                MidtermFileServer server = new MidtermFileServer(port, false);
                 server.open();
                 String msg = server.readLine();
                 print("server received : " + msg);
@@ -79,7 +79,7 @@ public class LiteFileServerTest {
                 }
             }
             public void clientRun() throws IOException {
-                LiteFileClient client = new LiteFileClient();
+                MidtermFileClient client = new MidtermFileClient();
                 client.connect("localhost", port);
                 client.writeMsg("fileList");
                 while(true){
@@ -95,7 +95,7 @@ public class LiteFileServerTest {
     public void fileGet(){
         csTest(new EventTestInterface(){
             public void serverRun() throws IOException {
-                LiteFileServer server = new LiteFileServer(port, false);
+                MidtermFileServer server = new MidtermFileServer(port, false);
                 server.open();
                 while (true) {
                     String msg = server.readLine();
@@ -108,7 +108,7 @@ public class LiteFileServerTest {
                 }
             }
             public void clientRun() throws IOException {
-                LiteFileClient client = new LiteFileClient();
+                MidtermFileClient client = new MidtermFileClient();
                 client.connect("localhost", port);
                 List<String> fileList = client.getFileList();
                 if (fileList.size() > 0) {
@@ -128,11 +128,11 @@ public class LiteFileServerTest {
     public void senario(){
         csTest(new EventTestInterface(){
             public void serverRun() throws IOException {
-                LiteFileServer server = new LiteFileServer(port, false);
+                MidtermFileServer server = new MidtermFileServer(port, false);
                 server.open();
             }
             public void clientRun() throws IOException {
-                LiteFileClient client = new LiteFileClient();
+                MidtermFileClient client = new MidtermFileClient();
                 client.connect("localhost", port);
                 List<String> fileList = client.getFileList();
                 if (fileList.size() > 0) {
@@ -179,9 +179,9 @@ public class LiteFileServerTest {
 
     //@Test
     public void server_client_nosync() throws IOException {
-        LiteFileServer server = new LiteFileServer(port, false);
+        MidtermFileServer server = new MidtermFileServer(port, false);
         server.open();
-        LiteFileClient client = new LiteFileClient();
+        MidtermFileClient client = new MidtermFileClient();
         client.connect("localhost", port);
         client.writeMsg("hello");
         System.out.println(server.readLine());
